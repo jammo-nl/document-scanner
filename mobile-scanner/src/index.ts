@@ -1,16 +1,17 @@
 'use strict';
 import './index.css';
+import Config from '@config';
 
-var video = document.querySelector('video');
-var canvas: HTMLCanvasElement;
+const video = document.querySelector('video');
+let canvas: HTMLCanvasElement;
 
-var loading_state = false;
+let loading_state = false;
 
 function takeSnapshot() {
-    var img = document.querySelector('img') || document.createElement('img');
+    let img = document.querySelector('img') || document.createElement('img');
     img.className = "preview";
-    var context;
-    var width = video!.offsetWidth, height = video!.offsetHeight;
+    let context;
+    let width = video!.offsetWidth, height = video!.offsetHeight;
 
 
     canvas = canvas || document.createElement('canvas');
@@ -48,3 +49,12 @@ if (navigator.mediaDevices) {
             setErrorState('Could not access the camera. Error: ' + error.name);
         });
 }
+
+// room setup
+let ws = new WebSocket(Config.ws_server);
+ws.addEventListener("error", (event: any) => {
+    setErrorState("Websocket error: " + event.name);
+});
+ws.addEventListener("open", (event: any) => { });
+ws.addEventListener("close", (event: any) => { });
+ws.addEventListener("message", (event: any) => { });
