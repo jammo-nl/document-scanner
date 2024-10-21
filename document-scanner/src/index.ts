@@ -1,17 +1,16 @@
+'use strict';
 import './index.css';
+import QRCode from 'qrcode';
 
-const showNav = document.querySelector(".show-nav");
-const closeNav = document.querySelector(".close-nav");
-const nav = document.querySelector(".nav");
+const document_new = document.querySelector('#document-new');
+const document_export = document.querySelector('#document-export');
 
-closeNav?.addEventListener("click", () => {
-  nav?.classList.remove("right-0");
-  nav?.classList.add("right-[-50%]");
-  alert("LSKDF");
-});
 
-showNav?.addEventListener("click", () => {
-  nav?.classList.remove("right-[-50%]");
-  nav?.classList.add("right-0");
-  alert("LSKDF");
-});
+
+document_new!.addEventListener('click', () => { alert("NEW") });
+document_export!.addEventListener('click', () => { alert("SAVE") });
+
+QRCode.toCanvas(document.getElementById('qrcode'), 'https://www.ljasdf.asld/lasdjf', { width: 300 }, function (error) {
+  if (error) console.error(error)
+  console.log('success!');
+})
