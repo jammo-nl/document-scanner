@@ -1,11 +1,43 @@
 import { defineConfig } from '@rsbuild/core';
 
 export default defineConfig({
-    html: { template: './src/index.html', title: 'Document Scanner' },
+    html: {
+        template({ entryName }) {
+            const templates = {
+                index: './src/main/index.html',
+                scanner: './src/scanner/index.html',
+            };
+            return templates[entryName] || './src/main/index.html';
+        },
+    },
     tools: {},
     source: {
-        alias: {
-            '@config': process.env.NODE_ENV == "development" ? "../js_shared/config_dev.ts" : "../js_shared/config.ts"
-        }
+        entry: {
+            index: './src/main/index.ts',
+            scanner: './src/scanner/index.ts'
+        },
+    },
+    environments: {
+        local: {
+            source: {
+                alias: {
+                    '@config': "./src/config-dev.ts"
+                }
+            }
+        },
+        next: {
+            source: {
+                alias: {
+                    '@config': "./src/config-next.ts"
+                }
+            }
+        },
+        prd: {
+            source: {
+                alias: {
+                    '@config': "./src/config-prd.ts"
+                }
+            }
+        },
     }
 });

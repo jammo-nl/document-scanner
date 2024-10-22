@@ -1,5 +1,5 @@
 'use strict';
-import './index.css';
+import './main.css';
 import Config from '@config';
 import QRCode from 'qrcode';
 

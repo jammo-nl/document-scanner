@@ -1,5 +1,5 @@
 'use strict';
-import './index.css';
+import './scanner.css';
 import Config from '@config';
 
 const video = document.querySelector('video');
