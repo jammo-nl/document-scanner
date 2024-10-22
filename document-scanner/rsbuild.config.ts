@@ -5,7 +5,7 @@ export default defineConfig({
         template({ entryName }) {
             const templates = {
                 index: './src/main/index.html',
-                scanner: './src/scanner/index.html',
+                "scanner/index": './src/scanner/index.html',
             };
             return templates[entryName] || './src/main/index.html';
         },
@@ -14,7 +14,7 @@ export default defineConfig({
     source: {
         entry: {
             index: './src/main/index.ts',
-            scanner: './src/scanner/index.ts'
+            "scanner/index": './src/scanner/index.ts'
         },
     },
     environments: {

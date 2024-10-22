@@ -7,6 +7,11 @@ let canvas: HTMLCanvasElement;
 
 let loading_state = false;
 
+// get the room id
+const queryString = window.location.search;
+const urlParams = new URLSearchParams(queryString);
+const room_id = urlParams.get('rid');
+
 function takeSnapshot() {
     let img = document.querySelector('img') || document.createElement('img');
     img.className = "preview";
