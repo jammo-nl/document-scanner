@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 )
@@ -20,8 +21,8 @@ func main() {
 	fs := http.FileServer(http.Dir(path))
 	http.Handle("/", fs)
 
-	log.Print("Listening on :3000...")
-	err := http.ListenAndServe(":3000", nil)
+	log.Print(fmt.Sprintf("Listening on localhost:%d...", port))
+	err := http.ListenAndServe(fmt.Sprintf("localhost:%d", port), nil)
 	if err != nil {
 		log.Fatal(err)
 	}
