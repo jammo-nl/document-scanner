@@ -3,8 +3,8 @@
   "private": true,
   "version": "1.0.0",
   "scripts": {
-    "dev": "rsbuild dev --environment local --open",
-    "build": "rsbuild build --environment next",
+    "build-dev": "rsbuild build --environment local",
+    "build-next": "rsbuild build --environment next",
     "build-prd": "rsbuild build --environment prd",
     "preview": "rsbuild preview"
   },
