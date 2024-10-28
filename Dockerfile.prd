@@ -20,4 +20,4 @@ WORKDIR /app
 COPY --from=webui_build /app/dist /app/webui/dist
 COPY --from=server_build /app/server /app
 
-CMD ["/server"]
+CMD ["/app/server"]
