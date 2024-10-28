@@ -1,7 +1,7 @@
 # Stage 1: Build our webui
 FROM oven/bun:1 AS webui_build
 
-WORKDIR /app/webui
+WORKDIR /app
 
 COPY /webui /app
 RUN bun install
@@ -17,7 +17,7 @@ RUN go build -o server cmd/server.go
 # Build final image
 FROM gcr.io/distroless/base
 WORKDIR /app
-COPY --from=webui_build /app/dist /app/dist
+COPY --from=webui_build /app/dist /app/webui/dist
 COPY --from=server_build /app/server /app
 
-CMD ["./server"]
+CMD ["/server"]
