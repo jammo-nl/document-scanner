@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
+	"document-scanner/server"
 )
 
 var port int
@@ -18,8 +20,13 @@ func main() {
 	flag.StringVar(&path, "path", "./webui/dist", "Path to the static files")
 	flag.Parse()
 
+	// crate the rooms
+	server.AllRooms.Init(int32(rooms))
+
 	fs := http.FileServer(http.Dir(path))
 	http.Handle("/", fs)
+
+	http.HandleFunc("/signalling", server.SignallingHandler)
 
 	log.Printf("Listening on localhost:%d...", port)
 	err := http.ListenAndServe(fmt.Sprintf("localhost:%d", port), nil)

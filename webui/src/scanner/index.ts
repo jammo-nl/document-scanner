@@ -56,7 +56,7 @@ if (navigator.mediaDevices) {
 }
 
 // room setup
-let ws = new WebSocket(Config.ws_server);
+let ws = new WebSocket(Config.ws_server + "?rid=" + room_id);
 ws.addEventListener("error", (event: any) => {
     setErrorState("Websocket error: " + event.name);
 });

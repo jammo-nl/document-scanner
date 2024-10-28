@@ -1,4 +1,4 @@
 export default {
-    ws_server: "ws://localhost:3000/ws",
-    client: "http://localhost:3000/scanner",
+    ws_server: "ws://localhost:8080/signalling",
+    client: "http://localhost:8080/scanner/",
 }

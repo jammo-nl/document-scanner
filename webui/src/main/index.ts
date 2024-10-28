@@ -48,6 +48,8 @@ function setErrorState(message: string) {
 function createQrFor(url: string) {
     QRCode.toCanvas(document.getElementById('qrcode'), url, { width: 300 }, function () {
     });
+    const qr = document.querySelector<HTMLLinkElement>('#qr');
+    qr!.href = url;
     const elements = document.querySelectorAll<HTMLElement>('.qr-state');
     elements.forEach((element) => { element!.style.display = "block"; });
 }
@@ -63,17 +65,18 @@ ws.addEventListener("error", (event: any) => {
 });
 ws.addEventListener("open", (event: any) => {
     // after connect, send the create room message to the server
-    ws.send(JSON.stringify("CreateRoom"));
+    //ws.send(JSON.stringify("CreateRoom"));
 });
 ws.addEventListener("close", (event: any) => {
     setErrorState("Connection closed");
 });
 ws.addEventListener("message", (event: any) => {
-    const message = JSON.parse(event.message);
-    if (message.RoomCreated) {
-        createQrFor("https://web.docscanner.eu/client/" + message.RoomCreated);
-    } else if (message.ClientAdded) {
-
+    const message = JSON.parse(event.data);
+    if (message.message_type == "joined_room") {
+        createQrFor(Config.client + "?rid=" + message.data);
+    } else if (message.message_type == "client_added") {
+        const elements = document.querySelectorAll<HTMLElement>('.qr-state');
+        elements.forEach((element) => { element!.style.display = "none"; });
     } else if (message.type = "image_message") {
 
     }
