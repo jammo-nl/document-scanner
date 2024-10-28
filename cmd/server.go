@@ -28,8 +28,8 @@ func main() {
 
 	http.HandleFunc("/signalling", server.SignallingHandler)
 
-	log.Printf("Listening on localhost:%d...", port)
-	err := http.ListenAndServe(fmt.Sprintf("localhost:%d", port), nil)
+	log.Printf("Listening on 0.0.0.0:%d...", port)
+	err := http.ListenAndServe(fmt.Sprintf("0.0.0.0:%d", port), nil)
 	if err != nil {
 		log.Fatal(err)
 	}
