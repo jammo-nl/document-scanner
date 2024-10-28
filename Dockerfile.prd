@@ -15,7 +15,7 @@ COPY . /app
 RUN go build -o server cmd/server.go
 
 # Build final image
-FROM gcr.io/distroless/base
+FROM scratch
 WORKDIR /app
 COPY --from=webui_build /app/dist /app/webui/dist
 COPY --from=server_build /app/server /app
