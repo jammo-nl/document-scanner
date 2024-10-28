@@ -12,7 +12,7 @@ FROM golang:1.23 AS server_build
 
 WORKDIR /app
 COPY . /app
-RUN go build -o server cmd/server.go
+RUN CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' -o server cmd/server.go
 
 # Build final image
 FROM scratch
