@@ -1,6 +1,5 @@
 # Stage 1: Build our webui
 FROM oven/bun:1 AS webui_build
-
 WORKDIR /app
 
 COPY /webui /app
@@ -9,8 +8,13 @@ RUN bun run build-next
 
 # Stage 2: Build Go server
 FROM golang:1.23 AS server_build
-
 WORKDIR /app
+
+# First copy the mod file, to avoid redownloading all deps
+# for each server change
+COPY go.mod /app
+RUN go mod download
+
 COPY . /app
 RUN CGO_ENABLED=0 go build -ldflags '-extldflags "-static"' -o server cmd/server.go
 
