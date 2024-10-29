@@ -1,7 +1,7 @@
 services:
   server_prd:
     container_name: "docscanner_prd"
-    image: "localhost/document-scanner:prd"
+    image: "localhost/document-scanner:latest"
     ports:
       - "3000:8080"
     restart: "always"
