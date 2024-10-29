@@ -77,12 +77,53 @@ ws.addEventListener("message", (event: any) => {
     } else if (message.message_type == "client_added") {
         const elements = document.querySelectorAll<HTMLElement>('.qr-state');
         elements.forEach((element) => { element!.style.display = "none"; });
-    } else if (message.type = "image_message") {
 
+        WebRtConnect();
+    } else if (message.message_type == "answer") {
+        peerConnection.setRemoteDescription(JSON.parse(message.data));
+    } else if (message.message_type == "ice") {
+        alert("Ice ice baby..")
     }
 });
 
+let peerConnection: RTCPeerConnection;
+function WebRtConnect() {
+    const rtcConfig = {
+        iceServers: [
+            {
+                urls: 'stun:stun.1.google.com:19302'
+            },
+        ],
+    };
+    peerConnection = new RTCPeerConnection(rtcConfig);
 
+    peerConnection.ondatachannel = () => {
+        alert("Data received")
+    };
+
+    peerConnection.onicecandidate = (e) => {
+        ws.send(JSON.stringify({
+            message_type: "ice",
+            data: JSON.stringify(e.candidate)
+        }))
+    }
+
+    const offerOptions = {
+        iceRestart: true,
+        offerToReceiveAudio: false,
+        offerToReceiveVideo: false
+    };
+
+    peerConnection.createOffer(offerOptions).then((offer) => {
+        peerConnection.setLocalDescription(offer).then(() => {
+            ws.send(JSON.stringify({
+                message_type: "offer",
+                data: JSON.stringify(offer)
+            }));
+        })
+    });
+
+}
 // 	conn.onmessage = function (evt) {
 // 		var message = JSON.parse(evt.data);
 // 		if (message.RoomCreated) {

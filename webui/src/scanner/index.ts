@@ -62,4 +62,48 @@ ws.addEventListener("error", (event: any) => {
 });
 ws.addEventListener("open", (event: any) => { });
 ws.addEventListener("close", (event: any) => { });
-ws.addEventListener("message", (event: any) => { });
+ws.addEventListener("message", (event: any) => {
+    const message = JSON.parse(event.data);
+    if (message.message_type == "offer") {
+        let offer = JSON.parse(message.data);
+        WebRtConnect(offer);
+    } else if (message.message_type == "ice") {
+        alert("Ice ice baby..")
+    }
+});
+
+let peerConnection: RTCPeerConnection;
+let dataChannel: RTCDataChannel;
+function WebRtConnect(offer: RTCSessionDescriptionInit) {
+    const rtcConfig = {
+        iceServers: [
+            {
+                urls: 'stun:stun.1.google.com:19302'
+            },
+        ],
+    };
+    peerConnection = new RTCPeerConnection(rtcConfig);
+    dataChannel = peerConnection.createDataChannel('sendDataChannel');
+
+
+    peerConnection.onicecandidate = (e) => {
+        ws.send(JSON.stringify({
+            message_type: "ice",
+            data: JSON.stringify(e.candidate)
+        }))
+    }
+
+    peerConnection.setRemoteDescription(offer).then(() => {
+        peerConnection.createAnswer().then((answer) => {
+            ws.send(JSON.stringify({
+                message_type: "answer",
+                data: JSON.stringify(answer)
+            }));
+
+            setTimeout(() => {
+                alert("sending data")
+                dataChannel.send("de kat krapt");
+            }, 5000)
+        })
+    })
+}

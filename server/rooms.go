@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"math/rand"
 	"sync"
@@ -71,5 +72,15 @@ func (r *RoomMap) DeleteRoom(roomID string) {
 	r.Mutex.Lock()
 	defer r.Mutex.Unlock()
 
+	d := r.Map[roomID]
+
+	if d.Client != nil {
+		d.Client.Close()
+	}
+	if d.Host != nil {
+		d.Host.Close()
+	}
+
+	fmt.Println("Deleted room: ", roomID)
 	delete(r.Map, roomID)
 }

@@ -1,14 +1,37 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/gorilla/websocket"
 )
 
 var AllRooms RoomMap
+
+func handleMessages(broadcast chan Message, roomID string, isHost bool) {
+	for {
+		msg := <-broadcast
+
+		if p, ok := AllRooms.Map[roomID]; ok {
+			var err error
+			if isHost {
+				err = p.Client.WriteJSON(msg)
+			} else {
+				err = p.Host.WriteJSON(msg)
+			}
+
+			if err != nil {
+				fmt.Println(err)
+				AllRooms.DeleteRoom(roomID)
+			}
+		} else {
+			break
+		}
+	}
+	fmt.Println("DONE")
+}
 
 type Message struct {
 	MsgType string `json:"message_type"`
@@ -39,6 +62,7 @@ func SignallingHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal("Web Socket Upgrade Error", err)
 	}
+	defer ws.Close()
 
 	AllRooms.InsertIntoRoom(roomID, host, ws)
 
@@ -68,25 +92,21 @@ func SignallingHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("Web Socket join room Error", err)
 	}
 
-	//go broadcaster()
+	// listen for incomming messages
+	var broadcast = make(chan Message)
+	go handleMessages(broadcast, roomID, host)
+	defer close(broadcast)
 
 	for {
-		time.Sleep(100)
+		var msg Message
+		err := ws.ReadJSON(&msg)
+		if err != nil {
+			// delete the room
+			fmt.Println(err)
+			AllRooms.DeleteRoom(roomID)
+			return
+		}
+
+		broadcast <- msg
 	}
-	// for {
-	// 	var msg broadcastMsg
-
-	// 	err := ws.ReadJSON(&msg.Message)
-	// 	if err != nil {
-	// 		log.Fatal("Read Error:", err)
-	// 	}
-
-	// 	msg.Client = ws
-	// 	msg.RoomID = roomID[0]
-
-	// 	log.Println(msg.Message)
-
-	// 	broadcast <- msg
-
-	// }
 }
