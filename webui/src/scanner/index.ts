@@ -39,20 +39,22 @@ function setErrorState(message: string) {
 
 // use MediaDevices API
 // docs: https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
-if (navigator.mediaDevices) {
-    // access the web cam
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
-        // permission granted:
-        .then(function (stream) {
-            video!.srcObject = stream;
+function startCamera() {
+    if (navigator.mediaDevices) {
+        // access the web cam
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+            // permission granted:
+            .then(function (stream) {
+                video!.srcObject = stream;
 
-            let photo_button = document.querySelector<HTMLElement>('#photo-button');
-            photo_button!.addEventListener('click', takeSnapshot);
-        })
-        // permission denied:
-        .catch(function (error) {
-            setErrorState('Could not access the camera. Error: ' + error.name);
-        });
+                let photo_button = document.querySelector<HTMLElement>('#photo-button');
+                photo_button!.addEventListener('click', takeSnapshot);
+            })
+            // permission denied:
+            .catch(function (error) {
+                setErrorState('Could not access the camera. Error: ' + error.name);
+            });
+    }
 }
 
 // room setup
@@ -68,7 +70,7 @@ ws.addEventListener("message", (event: any) => {
         let offer = JSON.parse(message.data);
         WebRtConnect(offer);
     } else if (message.message_type == "ice") {
-        alert("Ice ice baby..")
+        peerConnection.addIceCandidate(JSON.parse(message.data))
     }
 });
 
@@ -78,13 +80,11 @@ function WebRtConnect(offer: RTCSessionDescriptionInit) {
     const rtcConfig = {
         iceServers: [
             {
-                urls: 'stun:stun.1.google.com:19302'
+                urls: 'stun:web.docscanner.eu:3478'
             },
         ],
     };
     peerConnection = new RTCPeerConnection(rtcConfig);
-    dataChannel = peerConnection.createDataChannel('sendDataChannel');
-
 
     peerConnection.onicecandidate = (e) => {
         ws.send(JSON.stringify({
@@ -93,17 +93,21 @@ function WebRtConnect(offer: RTCSessionDescriptionInit) {
         }))
     }
 
+    peerConnection.ondatachannel = (e) => {
+        dataChannel = e.channel;
+        dataChannel.onopen = (e) => {
+            startCamera();
+        }
+    }
+
     peerConnection.setRemoteDescription(offer).then(() => {
         peerConnection.createAnswer().then((answer) => {
-            ws.send(JSON.stringify({
-                message_type: "answer",
-                data: JSON.stringify(answer)
-            }));
-
-            setTimeout(() => {
-                alert("sending data")
-                dataChannel.send("de kat krapt");
-            }, 5000)
+            peerConnection.setLocalDescription(answer).then(() => {
+                ws.send(JSON.stringify({
+                    message_type: "answer",
+                    data: JSON.stringify(peerConnection.localDescription)
+                }));
+            })
         })
     })
 }

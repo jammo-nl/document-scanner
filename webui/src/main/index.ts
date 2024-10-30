@@ -82,20 +82,23 @@ ws.addEventListener("message", (event: any) => {
     } else if (message.message_type == "answer") {
         peerConnection.setRemoteDescription(JSON.parse(message.data));
     } else if (message.message_type == "ice") {
-        alert("Ice ice baby..")
+        peerConnection.addIceCandidate(JSON.parse(message.data))
     }
 });
 
 let peerConnection: RTCPeerConnection;
+let dataChannel: RTCDataChannel;
 function WebRtConnect() {
     const rtcConfig = {
         iceServers: [
             {
-                urls: 'stun:stun.1.google.com:19302'
+                urls: 'stun:web.docscanner.eu:3478'
             },
         ],
     };
     peerConnection = new RTCPeerConnection(rtcConfig);
+    dataChannel = peerConnection.createDataChannel('sendDataChannel');
+
 
     peerConnection.ondatachannel = () => {
         alert("Data received")
@@ -118,7 +121,7 @@ function WebRtConnect() {
         peerConnection.setLocalDescription(offer).then(() => {
             ws.send(JSON.stringify({
                 message_type: "offer",
-                data: JSON.stringify(offer)
+                data: JSON.stringify(peerConnection.localDescription)
             }));
         })
     });
