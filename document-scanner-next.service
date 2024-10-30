@@ -1,0 +1,10 @@
+[Unit]
+Description=Next document-scanner
+
+[Service]
+Type=simple
+ExecStart=podman-compose -f /home/docscanner/compose_next.yaml up
+ExecStop=podman-compose -f /home/docscanner/compose_next.yaml down
+
+[Install]
+WantedBy=default.target
