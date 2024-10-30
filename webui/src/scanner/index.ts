@@ -12,7 +12,10 @@ const queryString = window.location.search;
 const urlParams = new URLSearchParams(queryString);
 const room_id = urlParams.get('rid');
 
+let sending = false;
 function takeSnapshot() {
+    if (sending) return;
+    sending = true;
     let img = document.querySelector('img') || document.createElement('img');
     img.className = "preview";
     let context;
@@ -26,8 +29,34 @@ function takeSnapshot() {
     context = canvas.getContext('2d');
     context!.drawImage(video!, 0, 0, width, height);
 
-    img.src = canvas.toDataURL('image/png');
+    let data = canvas.toDataURL('image/png');;
+    img.src = data;
     document.body.appendChild(img);
+
+    setTimeout(() => {
+        sendSnapshot(data)
+    }, 0);
+}
+
+function sendSnapshot(data: string) {
+    var delay = 10;
+    var charSlice = 10000;
+    var dataSent = 0;
+    var intervalID: NodeJS.Timeout;
+
+    intervalID = setInterval(function () {
+        var slideEndIndex = dataSent + charSlice;
+        if (slideEndIndex > data.length) {
+            slideEndIndex = data.length;
+        }
+        dataChannel.send(data.slice(dataSent, slideEndIndex));
+        dataSent = slideEndIndex;
+        if (dataSent + 1 >= data.length) {
+            dataChannel.send("\n");
+            clearInterval(intervalID);
+            sending = false;
+        }
+    }, delay);
 }
 
 function setErrorState(message: string) {

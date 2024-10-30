@@ -86,6 +86,21 @@ ws.addEventListener("message", (event: any) => {
     }
 });
 
+function appendImage(image: string) {
+    let el = document.createElement("img");
+    el.src = image;
+    let holder = document.createElement("div");
+    holder.appendChild(el);
+    holder.classList.add("overflow-hidden");
+    holder.classList.add("shadow-lg");
+    holder.classList.add("flex-none");
+    holder.classList.add("w-64");
+    holder.classList.add("h-80");
+    holder.classList.add("m-5");
+
+    document.getElementById("imgcontainer")!.appendChild(holder);
+}
+
 let peerConnection: RTCPeerConnection;
 let dataChannel: RTCDataChannel;
 function WebRtConnect() {
@@ -99,9 +114,15 @@ function WebRtConnect() {
     peerConnection = new RTCPeerConnection(rtcConfig);
     dataChannel = peerConnection.createDataChannel('sendDataChannel');
 
-
-    peerConnection.ondatachannel = () => {
-        alert("Data received")
+    let imageData: string = "";
+    dataChannel.onmessage = (e) => {
+        if (e.data == "\n") {
+            appendImage(imageData);
+            imageData = "";
+        } else {
+            imageData += e.data;
+            //trace("Data chunk received");
+        }
     };
 
     peerConnection.onicecandidate = (e) => {
