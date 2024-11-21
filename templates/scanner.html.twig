@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Document scanner</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>"
+    />
+    {% block stylesheets %}
+    {{
+      encore_entry_link_tags("scanner")
+    }}
+    {% endblock %} {% block javascripts %}
+    {{
+      encore_entry_script_tags("scanner")
+    }}
+    {% endblock %}
+  </head>
+  <body>
+    <style>
+      .example-wrapper {
+        margin: 1em auto;
+        max-width: 800px;
+        width: 95%;
+        font: 18px/1.5 sans-serif;
+      }
+      .example-wrapper code {
+        background: #f5f5f5;
+        padding: 2px 6px;
+      }
+    </style>
+
+    <div class="example-wrapper">
+      This friendly message is coming from:
+      <ul>
+        <li>
+          Your controller at
+          <code
+            >/home/knee/Documents/Projects/github/document-scanner/src/Controller/MainController.php</code
+          >
+        </li>
+        <li>
+          Your template at
+          <code
+            >/home/knee/Documents/Projects/github/document-scanner/templates/main/index.html.twig</code
+          >
+        </li>
+        <li>
+          Your room is
+          <button id="connect">Connect</button>
+        </li>
+        <li>
+          state
+          <spab id="state"></span>
+        </li>
+      </ul>
+    </div>
+  </body>
+</html>

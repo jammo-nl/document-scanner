@@ -1,7 +1,0 @@
-services:
-  server_next:
-    container_name: "docscanner_next"
-    image: "localhost/document-scanner:next"
-    ports:
-      - "3001:8080"
-    restart: "always"
