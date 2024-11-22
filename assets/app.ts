@@ -1,7 +1,7 @@
 import { bool } from "@techstark/opencv-js";
 import "./styles/app.css";
 
-enum ConnectionState {
+export enum ConnectionState {
     Idle,
     Wait4Connection,
     Connecting,
