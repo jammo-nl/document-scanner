@@ -1,6 +1,28 @@
 import { bool } from "@techstark/opencv-js";
 import "./styles/app.css";
 
+// encode the number to 4 bytes Uint8Array
+function numberToBytes(number: number) {
+    const byteArray = new Uint8Array(4);
+
+    for (let index = 0; index < byteArray.length; index++) {
+        const byte = number & 0xff;
+        byteArray[index] = byte;
+        number = (number - byte) / 256;
+    }
+
+    return byteArray;
+}
+
+function bytesToNumber(byteArray: Uint8Array) {
+    let result = 0;
+    for (let i = byteArray.length - 1; i >= 0; i--) {
+        result = (result * 256) + byteArray[i];
+    }
+
+    return result;
+}
+
 export enum ConnectionState {
     Idle,
     Wait4Connection,
@@ -41,6 +63,11 @@ export class NetworkManager {
     peerConnection?: RTCPeerConnection;
     dataChannel?: RTCDataChannel;
     errorMessages: string[];
+    on_data?: Function;
+
+    recv_size: number = 0;
+    recv_total: number = 0;
+    recv_data?: Uint8Array;
 
     constructor() {
         this.errorMessages = [];
@@ -85,6 +112,7 @@ export class NetworkManager {
             });
         }
         this.dataChannel = this.peerConnection.createDataChannel('imageChannel');
+        this.dataChannel.binaryType = "arraybuffer";
 
         this.dataChannel.onopen = (e) => {
             // we are connected.
@@ -92,6 +120,9 @@ export class NetworkManager {
         }
         this.dataChannel.onclose = (e) => {
             this.#setState(ConnectionState.Disconnected)
+        }
+        this.dataChannel.onmessage = (e) => {
+            this.#readData(e)
         }
 
         try {
@@ -114,6 +145,31 @@ export class NetworkManager {
         this.state_cb = cb;
     }
 
+    onDataReceived(cb: Function) {
+        this.on_data = cb;
+    }
+
+    sendData(object: Uint8Array) {
+        const total_size = object.length;
+        const size_encoded = numberToBytes(total_size);
+
+        // create a new array with the size prepended as the first 4 bytes
+        var mergedData = new Uint8Array(4 + total_size);
+        mergedData.set(size_encoded);
+        mergedData.set(object, 4);
+
+        const delay = 1;
+        const sliceSize = 16000; // 16KB
+        let dataSent = 0;
+
+        while (dataSent < total_size) {
+            // create the next slice to sent
+            var slice = mergedData.slice(dataSent, sliceSize + dataSent);
+            dataSent += sliceSize;
+            this.dataChannel?.send(slice);
+        }
+    }
+
     #setState(state: ConnectionState) {
         if (this.state == state)
             return;
@@ -121,6 +177,34 @@ export class NetworkManager {
         this.state = state;
         if (this.state_cb != undefined)
             this.state_cb(this.state);
+    }
+
+    #readData(ev: MessageEvent) {
+        const message_data = new Uint8Array(ev.data);
+        if (this.recv_size == 0) {
+            // new item, so we want to fetch the size from the first 4 bytes
+            let arr = message_data.slice(0, 4);
+            let data = message_data.slice(4);
+            this.recv_total = 0;
+            this.recv_size = bytesToNumber(arr);
+            this.recv_data = new Uint8Array(this.recv_size);
+
+            // process the received data
+            this.recv_data.set(data, this.recv_total);
+            this.recv_total += data.length;
+        } else {
+            // process the received data
+            this.recv_data!.set(message_data, this.recv_total);
+            this.recv_total += message_data.length;
+        }
+
+        // check if we are done
+        if (this.recv_total == this.recv_size) {
+            this.recv_total = 0;
+            this.recv_size = 0;
+            if (this.on_data != undefined)
+                this.on_data(this.recv_data!);
+        }
     }
 
     // start listening for connections...
@@ -214,6 +298,9 @@ export class NetworkManager {
             }
             this.dataChannel.onclose = (e) => {
                 this.#setState(ConnectionState.Disconnected)
+            }
+            this.dataChannel.onmessage = (e) => {
+                this.#readData(e)
             }
         }
 

@@ -11,6 +11,10 @@ const open_link: HTMLLinkElement | null = document.querySelector("#link");
 netman.onConnectionStateChanged(() => {
     state!.innerText = state?.innerText + "\n" + netman.state + " : " + JSON.stringify(netman.errorMessages);
 })
+netman.onDataReceived((data: any) => {
+    console.log("DATA RECEIVED");
+    console.log(data);
+})
 
 
 connect_button!.addEventListener('click', async () => {

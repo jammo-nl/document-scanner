@@ -12,7 +12,7 @@ const netman = new NetworkManager();
 const room: string = window.location.pathname.split("/").slice(-1)[0];
 const video = document.querySelector('video');
 let canvas: HTMLCanvasElement;
-let sending = false;
+let creating_image = false;
 
 // use the network manager state to update our status overlay
 netman.onConnectionStateChanged(() => {
@@ -26,49 +26,28 @@ netman.onConnectionStateChanged(() => {
 })
 
 function takeSnapshot() {
-    if (sending) return;
-    sending = true;
+    if (creating_image) return;
+    creating_image = true;
     let img = document.querySelector('img') || document.createElement('img');
     img.className = "preview";
-    let context;
-    let width = video!.offsetWidth, height = video!.offsetHeight;
-
+    const width = video!.offsetWidth, height = video!.offsetHeight;
 
     canvas = canvas || document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
 
-    context = canvas.getContext('2d');
+    let context = canvas.getContext('2d');
     context!.drawImage(video!, 0, 0, width, height);
 
-    let data = canvas.toDataURL('image/png');;
-    img.src = data;
-    document.body.appendChild(img);
+    canvas.toBlob(async (data) => {
+        const data_array = new Uint8Array(await data!.arrayBuffer());
+        img.src = URL.createObjectURL(data!);
+        document.body.appendChild(img);
 
-    setTimeout(() => {
-        //sendSnapshot(data)
-    }, 0);
-}
-
-function sendSnapshot(data: string) {
-    var delay = 10;
-    var charSlice = 10000;
-    var dataSent = 0;
-    var intervalID: NodeJS.Timeout;
-
-    intervalID = setInterval(function () {
-        var slideEndIndex = dataSent + charSlice;
-        if (slideEndIndex > data.length) {
-            slideEndIndex = data.length;
-        }
-        // dataChannel.send(data.slice(dataSent, slideEndIndex));
-        // dataSent = slideEndIndex;
-        // if (dataSent + 1 >= data.length) {
-        //     dataChannel.send("\n");
-        //     clearInterval(intervalID);
-        //     sending = false;
-        // }
-    }, delay);
+        // transfer the image
+        netman.sendData(data_array);
+    });
+    creating_image = false;
 }
 
 // use MediaDevices API
