@@ -72,4 +72,10 @@ Encore
   .enablePostCssLoader()
   .enableTypeScriptLoader();
 
-module.exports = Encore.getWebpackConfig();
+let conf = Encore.getWebpackConfig();
+conf.resolve.fallback = {
+  fs: false,
+  path: false,
+  crypto: false,
+};
+module.exports = conf;
