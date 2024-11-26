@@ -2,11 +2,8 @@
 <html>
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document scanner</title>
-    <link
-      rel="icon"
-      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>"
-    />
     {% block stylesheets %}
     {{
       encore_entry_link_tags("main")
@@ -18,48 +15,84 @@
     {% endblock %}
   </head>
   <body>
-    <style>
-      .example-wrapper {
-        margin: 1em auto;
-        max-width: 800px;
-        width: 95%;
-        font: 18px/1.5 sans-serif;
-      }
-      .example-wrapper code {
-        background: #f5f5f5;
-        padding: 2px 6px;
-      }
-    </style>
+    <header class="bg-blue-900 sticky top-0 w-full shadow-md">
+      <nav class="container mx-auto px-6 py-3">
+        <div class="flex justify-between items-center">
+          <a href="#" class="text-2xl font-bold text-white">Document Scanner <small>pre alpha</small></small></a>
+          <div class="flex space-x-4">
+            <button
+              title="Connect phone"
+              id="connect-phone"
+              class="bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-full h-14 w-14 flex items-center justify-center text-xl"
+            >
+              <i id="connect-phone-state" class="fa fa-mobile-screen-button"></i></button>
+            <button
+              title="New document"
+              id="document-new"
+              class="bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-full h-14 w-14 flex items-center justify-center text-xl"
+            >
+              <i class="fa fa-file"></i></button
+            ><button
+              title="Export"
+              id="document-export"
+              class="bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-full h-14 w-14 flex items-center justify-center text-xl"
+            >
+              <i class="fa fa-floppy-disk"></i>
+            </button>
+          </div>
+        </div>
+      </nav>
+    </header>
 
-    <div class="example-wrapper">
-      This friendly message is coming from:
-      <ul>
-        <li>
-          Your controller at
-          <code
-            >/home/knee/Documents/Projects/github/document-scanner/src/Controller/MainController.php</code
-          >
-        </li>
-        <li>
-          Your template at
-          <code
-            >/home/knee/Documents/Projects/github/document-scanner/templates/main/index.html.twig</code
-          >
-        </li>
-        <li>
-          Your room is
-          <button id="connect">Connect</button>
-          <a target="_blank" id="link">Open room</a>
-        </li>
-        <li>
-          state
-          <span id="state"></span>
-        </li>
-        <li>
-          result
-          <div id="result"></div>
-        </li>
-      </ul>
+    <div id="doccontainer" class="container mx-auto px-4 mt-2 flex flex-wrap">
     </div>
+
+    <div class="qr-overlay qr-state"></div>
+    <div class="qr-code qr-state"><a id="qr" href="#"><canvas id="qrcode"></canvas></a></div>
+    <div class="error-overlay error-state"></div>
+    <div class="error-message error-state"></div>
+
+    <div id="confirm_reset" style="display:none"
+      class="fixed inset-0 flex items-center justify-center z-50 backdrop-blur"
+    >
+      <div
+        class="relative px-4 min-h-screen md:flex md:items-center md:justify-center"
+      >
+        <div class="opacity-25 w-full h-full absolute z-10 inset-0"></div>
+        <div
+          class="bg-white rounded-lg md:max-w-md md:mx-auto p-4 fixed inset-x-0 bottom-0 z-50 mb-4 mx-4 md:relative shadow-lg"
+        >
+          <div class="md:flex items-center">
+            <div
+              class="rounded-full border border-gray-300 flex items-center justify-center w-16 h-16 flex-shrink-0 mx-auto"
+            >
+              <i class="bx bx-error text-3xl"> &#9888; </i>
+            </div>
+            <div class="mt-4 md:mt-0 md:ml-6 text-center md:text-left">
+              <p class="font-bold">Warning!</p>
+              <p class="text-sm text-gray-700 mt-1">
+                By starting a new document you will lose all unsaved data. Are
+                you sure you want to start a new document?
+              </p>
+            </div>
+          </div>
+          <div class="text-center md:text-right mt-4 md:flex md:justify-end">
+            <button
+              id="confirm-delete-btn"
+              class="block w-full md:inline-block md:w-auto px-4 py-3 md:py-2 bg-red-200 text-red-700 rounded-lg font-semibold text-sm md:ml-2 md:order-2"
+            >
+              New
+            </button>
+            <button
+              id="confirm-cancel-btn"
+              class="block w-full md:inline-block md:w-auto px-4 py-3 md:py-2 bg-gray-200 rounded-lg font-semibold text-sm mt-4 md:mt-0 md:order-1"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </body>
 </html>
