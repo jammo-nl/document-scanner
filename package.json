@@ -24,6 +24,7 @@
     "build": "encore production --progress"
   },
   "dependencies": {
-    "@techstark/opencv-js": "4.5.2"
+    "@techstark/opencv-js": "4.5.2",
+    "qrcode": "^1.5.4"
   }
 }
