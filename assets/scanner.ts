@@ -55,7 +55,7 @@ function takeSnapshot() {
 function startCamera() {
     if (navigator.mediaDevices) {
         // access the web cam
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        navigator.mediaDevices.getUserMedia({ video: { width: 2480, height: 3508, facingMode: 'environment' } })
             // permission granted:
             .then(function (stream) {
                 video!.srcObject = stream;
