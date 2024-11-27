@@ -1,7 +1,7 @@
 export default {
     iceServers: [
         {
-            urls: 'stun.l.google.com'
+            urls: 'stun:stun.l.google.com:19302'
         },
     ],
 };
