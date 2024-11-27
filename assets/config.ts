@@ -1,7 +1,7 @@
 export default {
     iceServers: [
         {
-            urls: 'stun:web.docscanner.eu:3478'
+            urls: 'stun.l.google.com'
         },
     ],
 };
