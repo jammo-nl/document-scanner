@@ -5,6 +5,8 @@ export interface Point {
     y: number;
 }
 
+//let dbg_canvas = document.getElementById("dbg");
+
 export class DetectEdges {
     static detect(source: HTMLImageElement): Point[] {
         const img = cv.imread(source);
@@ -12,17 +14,24 @@ export class DetectEdges {
         cv.cvtColor(img, gray, cv.COLOR_RGBA2GRAY);
         const blur = new cv.Mat();
         cv.GaussianBlur(gray, blur, new cv.Size(5, 5), 0, 0, cv.BORDER_DEFAULT);
-        const thresh = new cv.Mat();
-        cv.threshold(blur, thresh, 0, 255, cv.THRESH_BINARY + cv.THRESH_OTSU);
+
+        let canny = new cv.Mat();
+        cv.Canny(blur, canny, 10, 80, 3, false);
+
+        const kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(5, 5));
+        cv.dilate(canny, canny, kernel);
         let contours = new cv.MatVector();
         let hierarchy = new cv.Mat();
 
-        cv.findContours(thresh, contours, hierarchy, cv.RETR_CCOMP,
+        //cv.imshow(dbg_canvas!, canny);
+
+        cv.findContours(canny, contours, hierarchy, cv.RETR_CCOMP,
             cv.CHAIN_APPROX_SIMPLE);
 
         let maxArea = 0;
         let maxContourIndex = -1;
         for (let i = 0; i < Number(contours.size()); ++i) {
+            //console.log("countour.. " + i + " area " + cv.contourArea(contours.get(i)));
             let contourArea = cv.contourArea(contours.get(i));
             if (contourArea > maxArea) {
                 maxArea = contourArea;
@@ -30,14 +39,18 @@ export class DetectEdges {
             }
         }
 
+        //console.log("contour found: " + maxContourIndex);
+
         const maxContour = contours.get(maxContourIndex);
         const points = this.getCornerPoints(maxContour)
         img.delete();
         gray.delete();
         blur.delete();
-        thresh.delete();
+        canny.delete();
         contours.delete();
         hierarchy.delete();
+
+        console.log(points);
         return points;
     }
 
