@@ -24,12 +24,14 @@ function filter_filename($name)
 class RoomService
 {
     private $room_storage;
+    public $version;
     private $logger;
     private $fs;
 
-    public function __construct($room_storage, LoggerInterface $logger, FileSystem $fs)
+    public function __construct($room_storage, $version, LoggerInterface $logger, FileSystem $fs)
     {
         $this->room_storage = $room_storage;
+        $this->version = $version;
         $this->logger = $logger;
         $this->fs = $fs;
     }

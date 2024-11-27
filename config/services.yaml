@@ -21,7 +21,7 @@ services:
             - '../src/Kernel.php'
 
     App\Service\RoomService:
-        arguments: ['%app.storage.room%']
+        arguments: ['%app.storage.room%', '%app.version%']
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
@@ -29,3 +29,4 @@ services:
 # application config
 parameters:
     app.storage.room: '%kernel.project_dir%/storage/room'
+    app.version: '0.1.0'

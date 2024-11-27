@@ -13,9 +13,11 @@ use App\Service\RoomService;
 class MainController extends AbstractController
 {
     #[Route('/', name: 'app_main', methods: ['GET'])]
-    public function index(): Response
+    public function index(RoomService $room_service): Response
     {
-        return $this->render('index.html.twig');
+        return $this->render('index.html.twig', [
+            'version' => $room_service->version
+        ]);
     }
 
     #[Route('/scanner/{room}', name: 'app_scanner', methods: ['GET'])]
