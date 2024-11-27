@@ -305,11 +305,6 @@ export class NetworkManager {
             }
         }
 
-        // handle all remaining messages
-        for (let message of messages) {
-            await this.#handleMessage(message);
-        }
-
         try {
             // create our webrtc offer and send it to the other side
             await this.peerConnection.setRemoteDescription(JSON.parse(offer.payload));
@@ -323,6 +318,11 @@ export class NetworkManager {
             await this.peerConnection.setLocalDescription(rtc_answer);
         } catch (e) {
             return await this.#setErrorState("Peerconnectionsetup failed");
+        }
+
+        // handle all remaining messages
+        for (let message of messages) {
+            await this.#handleMessage(message);
         }
 
         // if we are not connected by now, we wait in a loop for other messages
