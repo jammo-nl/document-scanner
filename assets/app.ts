@@ -221,7 +221,7 @@ export class NetworkManager {
             return await this.#setErrorState("Failed to connect, no client");
         }
         for (let message of messages) {
-            this.#handleMessage(message);
+            await this.#handleMessage(message);
         }
 
         // if we are not connected by now, we wait in a loop for other messages
@@ -236,7 +236,7 @@ export class NetworkManager {
                 return await this.#setErrorState("Connection timeout");
             }
             for (let message of messages) {
-                this.#handleMessage(message);
+                await this.#handleMessage(message);
             }
         }
 
@@ -247,11 +247,12 @@ export class NetworkManager {
     async #handleMessage(message: Message) {
         switch (message.type) {
             case MessageType.JoinRoom: {
-                this.peerConnection?.setRemoteDescription(JSON.parse(message.payload));
+                await this.peerConnection?.setRemoteDescription(JSON.parse(message.payload));
+                this.#setState(ConnectionState.Connecting);
                 break;
             }
             case MessageType.Ice: {
-                this.peerConnection?.addIceCandidate(JSON.parse(message.payload));
+                await this.peerConnection?.addIceCandidate(JSON.parse(message.payload));
                 break;
             }
         }
@@ -304,16 +305,22 @@ export class NetworkManager {
             }
         }
 
+        // handle all remaining messages
+        for (let message of messages) {
+            await this.#handleMessage(message);
+        }
+
         try {
             // create our webrtc offer and send it to the other side
             await this.peerConnection.setRemoteDescription(JSON.parse(offer.payload));
             let rtc_answer = await this.peerConnection.createAnswer();
-            await this.peerConnection.setLocalDescription(rtc_answer);
 
             await this.#request({
                 type: MessageType.JoinRoom,
                 payload: JSON.stringify(rtc_answer)
             });
+
+            await this.peerConnection.setLocalDescription(rtc_answer);
         } catch (e) {
             return await this.#setErrorState("Peerconnectionsetup failed");
         }
@@ -330,7 +337,7 @@ export class NetworkManager {
                 return await this.#setErrorState("Connection timeout");
             }
             for (let message of messages) {
-                this.#handleMessage(message);
+                await this.#handleMessage(message);
             }
         }
 
@@ -372,7 +379,7 @@ export class NetworkManager {
             }
 
             // small delay before we do the next request
-            await delay(250);
+            await delay(500);
         }
 
         return return_data;
