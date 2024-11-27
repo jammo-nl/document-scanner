@@ -95,7 +95,9 @@ function updateView() {
 
 connect_phone!.addEventListener('click', async () => {
     let room = await netman.createRoom(rtcConfig);
-    const url = "/scanner/" + room
+    const url = (document.location.href + "/scanner/" + room).replace("//scanner", "/scanner");
+
+    alert(url)
 
     // set the qrcode / link
     QRCode.toCanvas(document.getElementById('qrcode'), url, { width: 300 }, function () {
