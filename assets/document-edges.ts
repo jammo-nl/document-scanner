@@ -5,27 +5,44 @@ export interface Point {
     y: number;
 }
 
-//let dbg_canvas = document.getElementById("dbg");
-
 export class DetectEdges {
     static detect(source: HTMLImageElement): Point[] {
-        const img = cv.imread(source);
-        const gray = new cv.Mat();
-        cv.cvtColor(img, gray, cv.COLOR_RGBA2GRAY);
-        const blur = new cv.Mat();
-        cv.GaussianBlur(gray, blur, new cv.Size(5, 5), 0, 0, cv.BORDER_DEFAULT);
+        let img = cv.imread(source);
 
-        let canny = new cv.Mat();
-        cv.Canny(blur, canny, 10, 80, 3, false);
+        // get a scaling factor and resize the image to a workable size
+        let limit_dim = 800.0;
+        let max_dim = Math.max(img.size().width, img.size().height);
+        let scale = 1;
+        if (limit_dim < max_dim) {
+            scale = limit_dim / max_dim;
+            cv.resize(img, img, new cv.Size(0, 0), scale, scale);
+        }
 
-        const kernel = cv.getStructuringElement(cv.MORPH_ELLIPSE, new cv.Size(5, 5));
-        cv.dilate(canny, canny, kernel);
+        // repeated closing operation to remove text from the document
+        // https://docs.opencv.org/4.x/d4/d76/tutorial_js_morphological_ops.html
+        const M = cv.Mat.ones(5, 5, cv.CV_8U);
+        cv.morphologyEx(img, img, cv.MORPH_CLOSE, M, new cv.Point(1, 1), 3);
+
+        // use grabcut to remove the background
+        // let mask = new cv.Mat();
+        // let bgdModel = new cv.Mat();
+        // let fgdModel = new cv.Mat();
+        // let rect = new cv.Rect(0, 0, 20, 20);
+        // cv.grabCut(img, mask, rect, bgdModel, fgdModel, 1, cv.GC_INIT_WITH_RECT);
+
+
+        // make a grayscale / blurred version of the image
+        cv.cvtColor(img, img, cv.COLOR_RGBA2GRAY);
+        cv.GaussianBlur(img, img, new cv.Size(5, 5), 0, 0, cv.BORDER_DEFAULT);
+
+        // use canny for edge detectoin
+        cv.Canny(img, img, 10, 90, 3, false);
+
+
+        // find contours
         let contours = new cv.MatVector();
         let hierarchy = new cv.Mat();
-
-        //cv.imshow(dbg_canvas!, canny);
-
-        cv.findContours(canny, contours, hierarchy, cv.RETR_CCOMP,
+        cv.findContours(img, contours, hierarchy, cv.RETR_CCOMP,
             cv.CHAIN_APPROX_SIMPLE);
 
         let maxArea = 0;
@@ -39,18 +56,12 @@ export class DetectEdges {
             }
         }
 
-        //console.log("contour found: " + maxContourIndex);
-
         const maxContour = contours.get(maxContourIndex);
-        const points = this.getCornerPoints(maxContour)
+        const points = this.getCornerPoints(maxContour, scale);
         img.delete();
-        gray.delete();
-        blur.delete();
-        canny.delete();
         contours.delete();
         hierarchy.delete();
 
-        console.log(points);
         return points;
     }
 
@@ -58,7 +69,7 @@ export class DetectEdges {
         return Math.hypot(p1.x - p2.x, p1.y - p2.y);
     }
 
-    static getCornerPoints(contour: any): Point[] {
+    static getCornerPoints(contour: any, scale: number): Point[] {
         let points: Point[] = [];
         let rect = cv.minAreaRect(contour);
         const center = rect.center;
@@ -100,10 +111,11 @@ export class DetectEdges {
                 }
             }
         }
-        points.push(topLeftPoint as Point);
-        points.push(topRightPoint as Point);
-        points.push(bottomRightPoint as Point);
-        points.push(bottomLeftPoint as Point);
+        points.push({ x: topLeftPoint!.x / scale, y: topLeftPoint!.y / scale });
+        points.push({ x: topRightPoint!.x / scale, y: topRightPoint!.y / scale });
+        points.push({ x: bottomRightPoint!.x / scale, y: bottomRightPoint!.y / scale });
+        points.push({ x: bottomLeftPoint!.x / scale, y: bottomLeftPoint!.y / scale });
+
         return points;
     }
 }

@@ -10,6 +10,7 @@ import { Document } from "./document";
 const netman = new NetworkManager();
 const doc = new Document();
 
+const add_file = document.querySelector('#add-file');
 const connect_phone = document.querySelector('#connect-phone');
 const connect_phone_state = document.querySelector('#connect-phone-state');
 const document_new = document.querySelector('#document-new');
@@ -29,6 +30,23 @@ window.addEventListener('beforeunload', function (event) {
 
 document_export!.addEventListener('click', () => {
     alert("No export yet");
+});
+add_file!.addEventListener('change', (ev) => {
+    var files = (<HTMLInputElement>ev.target)!.files;
+    for (var i = 0; i < files!.length; i++) {
+        var reader = new FileReader();
+        var img = document.createElement("img");
+
+        img.onload = () => {
+            doc.addImagePage(img);
+            updateView();
+        }
+        reader.onload = function (event) {
+            img.src = event.target!.result as string;
+        };
+
+        reader.readAsDataURL(files![i]);
+    }
 });
 document_new!.addEventListener('click', () => {
     confirm_reset!.style.display = "block";
