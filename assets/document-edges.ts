@@ -22,18 +22,67 @@ export class DetectEdges {
             cv.resize(img, img, new cv.Size(0, 0), scale, scale);
         }
 
+        // make a grayscale / blurred version of the image
+        cv.cvtColor(img, img, cv.COLOR_RGBA2GRAY);
+        cv.GaussianBlur(img, img, new cv.Size(5, 5), 0, 0, cv.BORDER_DEFAULT);
+
+        // use canny for edge detectoin
+        cv.Canny(img, img, 10, 90, 3, false);
+
+
+        // find contours
+        let contours = new cv.MatVector();
+        let hierarchy = new cv.Mat();
+        cv.findContours(img, contours, hierarchy, cv.RETR_CCOMP,
+            cv.CHAIN_APPROX_SIMPLE);
+
+        // we need to occupy at least 20% of the picture..
+        // this can use some finetuning..
+        let min_area = (img.size().width * img.size().height) / 20;
+        let maxArea = 0;
+        let maxContourIndex = -1;
+        for (let i = 0; i < Number(contours.size()); ++i) {
+            //console.log("countour.. " + i + " area " + cv.contourArea(contours.get(i)));
+            let contourArea = cv.contourArea(contours.get(i));
+            if (contourArea > maxArea && contourArea > min_area) {
+                maxArea = contourArea;
+                maxContourIndex = i;
+            }
+        }
+
+        try {
+            const maxContour = contours.get(maxContourIndex);
+            points = this.getCornerPoints(maxContour, scale);
+        } catch (e) {
+            points = DetectEdges.detect2(source);
+        }
+        img.delete();
+        contours.delete();
+        hierarchy.delete();
+
+        return points;
+    }
+
+    static detect2(source: HTMLImageElement): Point[] {
+        let img = cv.imread(source);
+        // setup default area
+        let points: Point[] = [
+            { x: 0, y: 0 }, { x: img.size().width, y: 0 }, { x: img.size().width, y: img.size().height }, { x: 0, y: img.size().height }
+        ]
+
+        // get a scaling factor and resize the image to a workable size
+        let limit_dim = 800.0;
+        let max_dim = Math.max(img.size().width, img.size().height);
+        let scale = 1;
+        if (limit_dim < max_dim) {
+            scale = limit_dim / max_dim;
+            cv.resize(img, img, new cv.Size(0, 0), scale, scale);
+        }
+
         // repeated closing operation to remove text from the document
         // https://docs.opencv.org/4.x/d4/d76/tutorial_js_morphological_ops.html
         const M = cv.Mat.ones(5, 5, cv.CV_8U);
         cv.morphologyEx(img, img, cv.MORPH_CLOSE, M, new cv.Point(1, 1), 3);
-
-        // use grabcut to remove the background
-        // let mask = new cv.Mat();
-        // let bgdModel = new cv.Mat();
-        // let fgdModel = new cv.Mat();
-        // let rect = new cv.Rect(0, 0, 20, 20);
-        // cv.grabCut(img, mask, rect, bgdModel, fgdModel, 1, cv.GC_INIT_WITH_RECT);
-
 
         // make a grayscale / blurred version of the image
         cv.cvtColor(img, img, cv.COLOR_RGBA2GRAY);
@@ -49,19 +98,22 @@ export class DetectEdges {
         cv.findContours(img, contours, hierarchy, cv.RETR_CCOMP,
             cv.CHAIN_APPROX_SIMPLE);
 
+        // we need to occupy at least 20% of the picture..
+        // this can use some finetuning..
+        let min_area = (img.size().width * img.size().height) / 20;
         let maxArea = 0;
         let maxContourIndex = -1;
         for (let i = 0; i < Number(contours.size()); ++i) {
             //console.log("countour.. " + i + " area " + cv.contourArea(contours.get(i)));
             let contourArea = cv.contourArea(contours.get(i));
-            if (contourArea > maxArea) {
+            if (contourArea > maxArea && contourArea > min_area) {
                 maxArea = contourArea;
                 maxContourIndex = i;
             }
         }
 
-        const maxContour = contours.get(maxContourIndex);
         try {
+            const maxContour = contours.get(maxContourIndex);
             points = this.getCornerPoints(maxContour, scale);
         } catch (e) {
             console.log("No area detected");
