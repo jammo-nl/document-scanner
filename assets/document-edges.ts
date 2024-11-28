@@ -8,6 +8,10 @@ export interface Point {
 export class DetectEdges {
     static detect(source: HTMLImageElement): Point[] {
         let img = cv.imread(source);
+        // setup default area
+        let points: Point[] = [
+            { x: 0, y: 0 }, { x: img.size().width, y: 0 }, { x: img.size().width, y: img.size().height }, { x: 0, y: img.size().height }
+        ]
 
         // get a scaling factor and resize the image to a workable size
         let limit_dim = 800.0;
@@ -57,7 +61,11 @@ export class DetectEdges {
         }
 
         const maxContour = contours.get(maxContourIndex);
-        const points = this.getCornerPoints(maxContour, scale);
+        try {
+            points = this.getCornerPoints(maxContour, scale);
+        } catch (e) {
+            console.log("No area detected");
+        }
         img.delete();
         contours.delete();
         hierarchy.delete();
