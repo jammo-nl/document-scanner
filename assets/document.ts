@@ -46,6 +46,9 @@ export class Document {
 
         this.pages = reorderedItems;
     }
+    remove(idx: number) {
+        this.pages.splice(idx, 1);
+    }
 
     #updatePageResult(page: Page) {
         let tgt = crop(page.orig, page.points, page.width * this.dpi, page.heigth * this.dpi, page.color);
