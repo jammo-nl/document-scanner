@@ -5,12 +5,14 @@ import "./styles/main.css";
 import QRCode from 'qrcode';
 import { ConnectionState, NetworkManager } from "./app";
 import rtcConfig from "./config";
-import { Document } from "./document";
+import { Document, Page } from "./document";
 import Sortable from 'sortablejs';
+import { CornersEdit } from "./update_corners";
 
 
 const netman = new NetworkManager();
 const doc = new Document();
+let edit_page: Page | null = null;
 
 const add_file = document.querySelector('#add-file');
 const connect_phone = document.querySelector('#connect-phone');
@@ -20,6 +22,7 @@ const document_new_confirm = document.querySelector('#confirm-delete-btn');
 const document_new_cancel = document.querySelector('#confirm-cancel-btn');
 const document_export = document.querySelector('#document-export');
 const document_container = document.querySelector("#doccontainer");
+const close_edit = document.querySelector("#close-edit");
 const confirm_reset = document.querySelector("#confirm_reset") as HTMLDivElement;
 
 // avoid leaving the page if we have a document
@@ -74,7 +77,21 @@ function handleEditAction(button: HTMLElement) {
     let d = document_container?.children!;
     let items = Array.prototype.slice.call(d);
     let index = items.indexOf(button.parentElement?.parentElement);
+
+    // get the page to edit
+    edit_page = doc.page(index);
+
+    // start the editor
+    const elements = document.querySelectorAll<HTMLElement>('.editor-state');
+    elements.forEach((element) => { element!.style.display = "block"; });
+    new CornersEdit("#editor-canvas", edit_page.orig, edit_page.points);
 }
+close_edit!.addEventListener('click', () => {
+    const elements = document.querySelectorAll<HTMLElement>('.editor-state');
+    elements.forEach((element) => { element!.style.display = "none"; });
+    doc.updatePageResult(edit_page!);
+    updateView();
+});
 function handleDeleteAction(button: HTMLElement) {
     let d = document_container?.children!;
     let items = Array.prototype.slice.call(d);
@@ -133,7 +150,7 @@ function renderDocument(image: HTMLImageElement) {
     holder.appendChild(action_bar);
     document_container!.appendChild(holder);
 }
-let sortable = Sortable.create(document_container as HTMLElement, {
+Sortable.create(document_container as HTMLElement, {
     onEnd: (ev) => {
         doc.movePage(ev.oldIndex!, ev.newIndex!);
     }

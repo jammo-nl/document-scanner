@@ -1,7 +1,7 @@
 import { DetectEdges, Point } from "./document-edges";
 import { crop } from "./image_crop";
 
-interface Page {
+export interface Page {
     orig: HTMLImageElement,
     points: Point[],
     width: number,
@@ -13,7 +13,7 @@ export class Document {
     pages: Page[] = [];
     dflt_width: number = 210;
     dflt_height: number = 297;
-    dflt_color: boolean = false;
+    dflt_color: boolean = true;
     dpi: number = 72 / 25.4;  // 72, 96, 150, 300
 
     reset() {
@@ -31,7 +31,7 @@ export class Document {
             heigth: this.dflt_height,
             color: this.dflt_color,
         }
-        this.#updatePageResult(page);
+        this.updatePageResult(page);
         this.pages.push(page);
     }
     movePage(idx: number, target: number) {
@@ -50,9 +50,13 @@ export class Document {
         this.pages.splice(idx, 1);
     }
 
-    #updatePageResult(page: Page) {
+    updatePageResult(page: Page) {
         let tgt = crop(page.orig, page.points, page.width * this.dpi, page.heigth * this.dpi, page.color);
         page.result = tgt;
+    }
+
+    page(idx: number): Page {
+        return this.pages[idx];
     }
 
     previewPages(): HTMLImageElement[] {
