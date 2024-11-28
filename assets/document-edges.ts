@@ -8,10 +8,6 @@ export interface Point {
 export class DetectEdges {
     static detect(source: HTMLImageElement): Point[] {
         let img = cv.imread(source);
-        // setup default area
-        let points: Point[] = [
-            { x: 0, y: 0 }, { x: img.size().width, y: 0 }, { x: img.size().width, y: img.size().height }, { x: 0, y: img.size().height }
-        ]
 
         // get a scaling factor and resize the image to a workable size
         let limit_dim = 800.0;
@@ -21,6 +17,11 @@ export class DetectEdges {
             scale = limit_dim / max_dim;
             cv.resize(img, img, new cv.Size(0, 0), scale, scale);
         }
+
+        // setup default area
+        let points: Point[] = [
+            { x: 0, y: 0 }, { x: img.size().width, y: 0 }, { x: img.size().width, y: img.size().height }, { x: 0, y: img.size().height }
+        ]
 
         // make a grayscale / blurred version of the image
         cv.cvtColor(img, img, cv.COLOR_RGBA2GRAY);
@@ -65,10 +66,6 @@ export class DetectEdges {
 
     static detect2(source: HTMLImageElement): Point[] {
         let img = cv.imread(source);
-        // setup default area
-        let points: Point[] = [
-            { x: 0, y: 0 }, { x: img.size().width, y: 0 }, { x: img.size().width, y: img.size().height }, { x: 0, y: img.size().height }
-        ]
 
         // get a scaling factor and resize the image to a workable size
         let limit_dim = 800.0;
@@ -78,6 +75,11 @@ export class DetectEdges {
             scale = limit_dim / max_dim;
             cv.resize(img, img, new cv.Size(0, 0), scale, scale);
         }
+
+        // setup default area
+        let points: Point[] = [
+            { x: 0, y: 0 }, { x: img.size().width, y: 0 }, { x: img.size().width, y: img.size().height }, { x: 0, y: img.size().height }
+        ]
 
         // repeated closing operation to remove text from the document
         // https://docs.opencv.org/4.x/d4/d76/tutorial_js_morphological_ops.html
