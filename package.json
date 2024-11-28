@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@techstark/opencv-js": "4.5.2",
+    "jspdf": "^2.5.2",
     "qrcode": "^1.5.4",
     "sortablejs": "^1.15.5"
   }

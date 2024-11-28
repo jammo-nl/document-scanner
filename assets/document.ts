@@ -59,7 +59,7 @@ export class Document {
         return this.pages[idx];
     }
 
-    previewPages(): HTMLImageElement[] {
+    renderedPages(): HTMLImageElement[] {
         let images: HTMLImageElement[] = [];
         this.pages.forEach((page) => {
             if (page.result != undefined)

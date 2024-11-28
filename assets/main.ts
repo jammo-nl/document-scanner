@@ -8,6 +8,7 @@ import rtcConfig from "./config";
 import { Document, Page } from "./document";
 import Sortable from 'sortablejs';
 import { CornersEdit } from "./update_corners";
+import jsPDF from "jspdf";
 
 
 const netman = new NetworkManager();
@@ -27,14 +28,30 @@ const confirm_reset = document.querySelector("#confirm_reset") as HTMLDivElement
 
 // avoid leaving the page if we have a document
 window.addEventListener('beforeunload', function (event) {
-    if (doc.previewPages().length > 0) {
+    if (doc.renderedPages().length > 0) {
         event.preventDefault();
         return (event.returnValue = "");
     }
 });
 
 document_export!.addEventListener('click', () => {
-    alert("No export yet");
+    if (doc.renderedPages().length == 0) return;
+
+    var pdfDoc = new jsPDF("p", "mm", "a4");
+
+    var width = pdfDoc.internal.pageSize.getWidth();
+    var height = pdfDoc.internal.pageSize.getHeight();
+
+    let pages = doc.renderedPages();
+    let first_page = pages.shift();
+    pdfDoc.addImage(first_page!.src, 'JPEG', 0, 0, width, height);
+
+    pages.forEach((page) => {
+        pdfDoc.addPage();
+        pdfDoc.addImage(page.src, 'JPEG', 0, 0, width, height);
+    });
+
+    pdfDoc.save('scanresult.pdf');
 });
 add_file!.addEventListener('change', (ev) => {
     var files = (<HTMLInputElement>ev.target)!.files;
@@ -189,7 +206,7 @@ netman.onDataReceived((data: any) => {
 
 function updateView() {
     resetDocumentContainer();
-    doc.previewPages().forEach((image) => {
+    doc.renderedPages().forEach((image) => {
         renderDocument(image);
     });
 }
