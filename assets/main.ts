@@ -6,6 +6,8 @@ import QRCode from 'qrcode';
 import { ConnectionState, NetworkManager } from "./app";
 import rtcConfig from "./config";
 import { Document } from "./document";
+import Sortable from 'sortablejs';
+
 
 const netman = new NetworkManager();
 const doc = new Document();
@@ -78,12 +80,19 @@ function renderDocument(image: HTMLImageElement) {
     holder.classList.add("overflow-hidden");
     holder.classList.add("shadow-lg");
     holder.classList.add("flex-none");
+    holder.classList.add("hover:drop-shadow-xl");
     holder.classList.add("w-64");
     holder.classList.add("h-80");
     holder.classList.add("m-5");
 
     document_container!.appendChild(holder);
 }
+let sortable = Sortable.create(document_container as HTMLElement, {
+    onEnd: (ev) => {
+        doc.movePage(ev.oldIndex!, ev.newIndex!);
+    }
+});
+
 
 
 netman.onConnectionStateChanged(() => {

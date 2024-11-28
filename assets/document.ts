@@ -34,6 +34,18 @@ export class Document {
         this.#updatePageResult(page);
         this.pages.push(page);
     }
+    movePage(idx: number, target: number) {
+        const movedItem = this.pages.filter((item, index) => index === idx);
+        const remainingItems = this.pages.filter((item, index) => index !== idx);
+
+        const reorderedItems = [
+            ...remainingItems.slice(0, target),
+            movedItem[0],
+            ...remainingItems.slice(target)
+        ];
+
+        this.pages = reorderedItems;
+    }
 
     #updatePageResult(page: Page) {
         let tgt = crop(page.orig, page.points, page.width * this.dpi, page.heigth * this.dpi, page.color);
