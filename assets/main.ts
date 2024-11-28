@@ -33,19 +33,27 @@ document_export!.addEventListener('click', () => {
 });
 add_file!.addEventListener('change', (ev) => {
     var files = (<HTMLInputElement>ev.target)!.files;
-    for (var i = 0; i < files!.length; i++) {
-        var reader = new FileReader();
-        var img = document.createElement("img");
 
-        img.onload = () => {
-            doc.addImagePage(img);
-            updateView();
-        }
-        reader.onload = function (event) {
-            img.src = event.target!.result as string;
-        };
+    if (files == undefined)
+        return;
 
-        reader.readAsDataURL(files![i]);
+    for (var i = 0; i < files.length; i++) {
+        let file = files[i];
+        // detach the current file handling so we can handle all files
+        setTimeout((file) => {
+            var reader = new FileReader();
+            var img = document.createElement("img");
+
+            img.onload = () => {
+                doc.addImagePage(img);
+                updateView();
+            }
+            reader.onload = function (event) {
+                img.src = event.target!.result as string;
+            };
+
+            reader.readAsDataURL(file);
+        }, 1, file);
     }
 });
 document_new!.addEventListener('click', () => {
@@ -95,13 +103,16 @@ netman.onConnectionStateChanged(() => {
 })
 netman.onDataReceived((data: any) => {
     const blob = new Blob([data.buffer], { type: 'image/png' });
-    const img = document.createElement('img');
-    img.src = URL.createObjectURL(blob);
+    // detach the current file handling so we can handle all files
+    setTimeout((blob) => {
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(blob);
 
-    img.onload = () => {
-        doc.addImagePage(img);
-        updateView();
-    }
+        img.onload = () => {
+            doc.addImagePage(img);
+            updateView();
+        }
+    }, 1, blob);
 })
 
 function updateView() {
