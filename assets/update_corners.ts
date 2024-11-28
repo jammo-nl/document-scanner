@@ -90,8 +90,8 @@ export class CornersEdit {
     #updateMouseCoords(event: any) {
         let canvasCoords = this.canvas.getBoundingClientRect();
         this.mousePos = {
-            x: event.pageX - canvasCoords.left,
-            y: event.pageY - canvasCoords.top
+            x: event.x - canvasCoords.left,
+            y: event.y - canvasCoords.top
         }
     }
 
