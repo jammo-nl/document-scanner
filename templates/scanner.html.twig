@@ -21,6 +21,19 @@
   <body>
     <div id="container">
       <video autoplay></video>
+      <label for="add-file" id="upload-button" class="bg-blue-500 hover:bg-blue-700 text-white font-bold rounded-full flex items-center justify-center text-xl">
+        <i
+            id="connect-phone-state"
+            class="fa fa-image"
+        ></i>
+        <input
+            type="file"
+            id="add-file"
+            multiple
+            hidden
+            accept="image/jpeg"
+            />
+      </label>
       <div id="photo-button" class="photo-button">
         <div class="circle"></div>
         <div class="ring"></div>
