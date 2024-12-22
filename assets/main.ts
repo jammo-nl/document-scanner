@@ -102,10 +102,37 @@ function handleEditAction(button: HTMLElement) {
     const elements = document.querySelectorAll<HTMLElement>('.editor-state');
     elements.forEach((element) => { element!.style.display = "block"; });
     new CornersEdit("#editor-canvas", edit_page.orig, edit_page.points);
+
+    // edit page details
+    const edit_width = document.querySelector<HTMLInputElement>('#editor-page-width');
+    const edit_height = document.querySelector<HTMLInputElement>('#editor-page-height');
+    const edit_color = document.querySelector<HTMLSelectElement>('#editor-page-color');
+    edit_width!.value = ''+edit_page.width;
+    edit_height!.value = ''+edit_page.height;
+
+    if ( edit_page.color ) {
+        edit_color!.value = "color";
+    } else {
+        edit_color!.value = "gray";
+    }
 }
 close_edit!.addEventListener('click', () => {
     const elements = document.querySelectorAll<HTMLElement>('.editor-state');
     elements.forEach((element) => { element!.style.display = "none"; });
+    
+    // save page details
+    const edit_width = document.querySelector<HTMLInputElement>('#editor-page-width');
+    const edit_height = document.querySelector<HTMLInputElement>('#editor-page-height');
+    const edit_color = document.querySelector<HTMLSelectElement>('#editor-page-color');
+    edit_page!.width = parseInt(edit_width!.value,10);
+    edit_page!.height = parseInt(edit_height!.value,10);
+
+    if ( edit_color!.value == "color" ) {
+        edit_page!.color = true;
+    } else {
+        edit_page!.color = false;
+    }
+    
     doc.updatePageResult(edit_page!);
     updateView();
 });

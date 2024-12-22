@@ -5,7 +5,7 @@ export interface Page {
     orig: HTMLImageElement,
     points: Point[],
     width: number,
-    heigth: number,
+    height: number,
     color: boolean,
     result?: HTMLImageElement,
 }
@@ -24,11 +24,13 @@ export class Document {
         // try to autodetect the corners for the image object
         const points = DetectEdges.detect(image);
 
+        //TODO: Autodetect if the detected page is landscape or portrait
+
         let page: Page = {
             orig: image,
             points: points,
             width: this.dflt_width,
-            heigth: this.dflt_height,
+            height: this.dflt_height,
             color: this.dflt_color,
         }
         this.updatePageResult(page);
@@ -51,7 +53,7 @@ export class Document {
     }
 
     updatePageResult(page: Page) {
-        let tgt = crop(page.orig, page.points, page.width * this.dpi, page.heigth * this.dpi, page.color);
+        let tgt = crop(page.orig, page.points, page.width * this.dpi, page.height * this.dpi, page.color);
         page.result = tgt;
     }
 

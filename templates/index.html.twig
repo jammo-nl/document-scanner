@@ -126,7 +126,22 @@
     <div class="editor-overlay editor-state"></div>
     <div class="editor-code editor-state">
       <div style="height: 100%" class="flex flex-row">
-        <div class="basis-1/4">01</div>
+        <div class="basis-1/4">
+          <h4>Page</h4>
+          <label>Width (mm)</label><br>
+          <input type="number" id="editor-page-width"><br><br>
+
+          <label>Height (mm)</label><br>
+          <input type="number" id="editor-page-height"><br><br>
+
+          <h4>Color</h4><br>
+          <select id="editor-page-color">
+            <option value="color">Color</option>
+            <option value="gray">Grayscale</option>
+          </select>
+
+
+        </div>
         <div class="basis-3/4">
           <div
             id="editor-canvas"
