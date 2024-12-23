@@ -172,7 +172,9 @@ function resetDocumentContainer() {
 function renderDocument(image: HTMLImageElement) {
     let holder = document.createElement("div");
     holder.appendChild(image);
-    holder.classList.add("overflow-hidden", "shadow-lg", "flex-none", "hover:drop-shadow-xl", "w-64", "m-5", "relative");
+    holder.classList.add("flex", "justify-center", "items-center", "overflow-hidden", "shadow-lg", "flex-none", "hover:drop-shadow-xl", "w-64", "h-64", "m-5", "relative");
+    image.style.maxHeight = "100%";
+    image.style.maxWidth = "100%";
 
     let action_bar = document.createElement("div");
     action_bar.classList.add("absolute", "bottom-0", "right-0", "text-green");
