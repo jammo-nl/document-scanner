@@ -29,4 +29,4 @@ services:
 # application config
 parameters:
     app.storage.room: '%kernel.project_dir%/storage/room'
-    app.version: '0.2.0'
+    app.version: '0.4.0'
