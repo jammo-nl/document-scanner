@@ -37,6 +37,7 @@ class Connector {
     _state: ConnectorState = ConnectorState.None;
     _last_error_reason: string | null = null;
     _receive_buffer: Uint8Array = new Uint8Array;
+    _send_buffer: Uint8Array = new Uint8Array;
     _socket: Socket;
     _config: RTCConfiguration | null = null;
     _room_id: string | null = null;
@@ -209,26 +210,49 @@ class Connector {
     }
 
     sendData(object: Uint8Array) {
-        this._setSending(true);
         const total_size = object.length;
         const size_encoded = numberToBytes(total_size);
 
-        // create a new array with our magic 4 bytes, than the size and than the object.
-        const mergedData = new Uint8Array(8 + total_size);
-        mergedData.set(MAGIC_V1);
-        mergedData.set(size_encoded, 4);
-        mergedData.set(object, 8);
+        // update our data with the new file to send
+        // start each file with 4 byte identifier and 4 byte size
+        const mergedData = new Uint8Array(8 + total_size + this._send_buffer.length);
+        mergedData.set(this._send_buffer);
+        mergedData.set(MAGIC_V1, this._send_buffer.length);
+        mergedData.set(size_encoded, 4 + this._send_buffer.length);
+        mergedData.set(object, 8 + this._send_buffer.length);
 
-        const sliceSize = 16000; // 16KB
-        let dataSent = 0;
 
-        while (dataSent < total_size) {
-            const slice = mergedData.slice(dataSent, sliceSize + dataSent);
-            dataSent += sliceSize;
-            this._dataChannel?.send(slice);
+        this._send_buffer = mergedData;
+
+        this._sendData();
+    }
+
+    _sendData() {
+        if (this._sending) return; // only do this once!!
+
+        this._setSending(true);
+        const sliceSize = 16384; // 16KB, safe for firefox and chrome ordered and unordered channels
+
+        // send all data in the array, if the buffer is to full we wait with sending..
+        function process(self: Connector) {
+            while (self._send_buffer.length > 0) {
+                if (self._dataChannel!.bufferedAmount > self._dataChannel!.bufferedAmountLowThreshold) break; // wait for next loop
+
+                const slice = self._send_buffer.slice(0, Math.min(self._send_buffer.length, sliceSize));
+                self._send_buffer = self._send_buffer.slice(Math.min(self._send_buffer.length, sliceSize), self._send_buffer.length);
+                self._dataChannel?.send(slice);
+            }
+
+            if (self._send_buffer.length == 0) {
+                self._setSending(false);
+            } else {
+                self._dataChannel!.onbufferedamountlow = () => {
+                    process(self);
+                }
+
+            }
         }
-
-        this._setSending(false);
+        process(this)
     }
 
     static server(config: RTCConfiguration, on_room_cb: (arg0: string) => void): Connector {
